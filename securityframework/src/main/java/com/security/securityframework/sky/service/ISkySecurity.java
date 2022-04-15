@@ -14,6 +14,7 @@ public interface ISkySecurity {
 
     /**
      * 获取 uid
+     *
      * @param request
      * @return
      * @throws TokenVerificationException
@@ -22,6 +23,7 @@ public interface ISkySecurity {
 
     /**
      * 获取用户角色
+     *
      * @param uid
      * @return
      */
@@ -29,6 +31,7 @@ public interface ISkySecurity {
 
     /**
      * 角色认证 false
+     *
      * @param response
      * @return
      */
@@ -37,6 +40,7 @@ public interface ISkySecurity {
 
     /**
      * 获取用户权限
+     *
      * @param uid
      * @return
      */
@@ -44,6 +48,7 @@ public interface ISkySecurity {
 
     /**
      * 权限认证 false
+     *
      * @param response
      * @return
      */
@@ -51,13 +56,16 @@ public interface ISkySecurity {
 
 
     /**
-     *  返回值-->未登录
+     * 返回值-->未登录
+     *
      * @param response
      * @return
      */
     Object doSkySecurityNoLoginProcessed(HttpServletResponse response);
+
     /**
      * 返回值-->系统错误
+     *
      * @param e
      * @param response
      * @return

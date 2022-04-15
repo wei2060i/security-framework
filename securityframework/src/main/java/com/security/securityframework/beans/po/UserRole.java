@@ -29,7 +29,7 @@ public class UserRole extends Model<UserRole> {
 
 
     @Override
-    protected Serializable pkVal() {
+    public Serializable pkVal() {
         return this.id;
     }
 

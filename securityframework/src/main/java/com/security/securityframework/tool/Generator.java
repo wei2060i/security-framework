@@ -1,63 +1,104 @@
 package com.security.securityframework.tool;
 
-import com.baomidou.mybatisplus.annotation.DbType;
-import com.baomidou.mybatisplus.generator.AutoGenerator;
-import com.baomidou.mybatisplus.generator.config.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.generator.FastAutoGenerator;
+import com.baomidou.mybatisplus.generator.config.DataSourceConfig;
+import com.baomidou.mybatisplus.generator.config.OutputFile;
+import com.baomidou.mybatisplus.generator.config.TemplateType;
+import com.baomidou.mybatisplus.generator.config.converts.MySqlTypeConvert;
+import com.baomidou.mybatisplus.generator.config.querys.MySqlQuery;
+import com.baomidou.mybatisplus.generator.config.rules.DateType;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
+import com.baomidou.mybatisplus.generator.keywords.MySqlKeyWordsHandler;
 
-/**
- * @author sky
- */
+import java.util.Collections;
+
 public class Generator {
-
     public static void main(String[] args) {
-        AutoGenerator autoGenerator = new AutoGenerator();
 
-        GlobalConfig config = new GlobalConfig();
-        config.setActiveRecord(true)  //支持Ar模式
-              .setAuthor("WeiWei")
-              .setOpen(false)
-              .setFileOverride(true)
-              .setOutputDir("src\\main\\java\\")
-              .setEnableCache(false)// XML 二级缓存
-              .setBaseResultMap(true)// XML ResultMap
-              .setBaseColumnList(true)// XML columList
-              .setServiceName("I%sService")
-              .setMapperName("%sDao");
-        autoGenerator.setGlobalConfig(config);
+        DataSourceConfig.Builder dataSourceConfig = new DataSourceConfig
+                .Builder("jdbc:mysql://localhost:3306/chat?characterEncoding=utf8&useUnicode=true&useSSL=false&serverTimezone=Hongkong",
+                "root", "123456")
+                .dbQuery(new MySqlQuery())
+                .schema("mybatis-plus")
+                .typeConvert(new MySqlTypeConvert())
+                .keyWordsHandler(new MySqlKeyWordsHandler());
 
-        DataSourceConfig dataSourceConfig = new DataSourceConfig();
-        dataSourceConfig.setDbType(DbType.MYSQL)
-                        .setDriverName("com.mysql.jdbc.Driver")
-                        .setUsername("root")
-                        .setPassword("123456")
-                        .setUrl("jdbc:mysql://127.0.0.1:3306/oauth?characterEncoding=utf8&useUnicode=true&useSSL=false");
-        autoGenerator.setDataSource(dataSourceConfig);
+        FastAutoGenerator fastAutoGenerator = FastAutoGenerator.create(dataSourceConfig)
+                .globalConfig(globalConfig -> {
+                    globalConfig.outputDir("src\\main\\java\\")
+                            .author("wei")
+                            //.enableSwagger()
+                            .disableOpenDir()
+                            .dateType(DateType.TIME_PACK)
+                            .commentDate("yyyy-MM-dd");
+                })
+                .packageConfig(packageConfig -> {
+                    packageConfig.parent("com.generator")
+                            .entity("beans.po")
+                            .mapper("dao")
+                            .service("service")
+                            .serviceImpl("service.impl")
+                            .controller("controller")
+                            .other("other")
+                            .pathInfo(Collections.singletonMap(OutputFile.xml,
+                                    System.getProperty("user.dir") + "/src/main/resources/mapper"));
+                    ;
+                })
+                //.templateEngine()
+                .templateConfig(velocity -> {
+                    velocity.disable(TemplateType.XML)
+                            .entity("/templates/entity.java")
+                            .service("/templates/service.java")
+                            .serviceImpl("/templates/serviceImpl.java")
+                            .mapper("/templates/mapper.java")
+                            //.xml("/templates/mapper.xml")
+                            .xml("") //设置不生成xml
+                            .controller("/templates/controller.java");
+                })
+                .strategyConfig(strategyConfig -> {
+                    strategyConfig
+                            .addInclude("t_content")
+                            //.addExclude("")
+                            .addTablePrefix("t_")
+                            .entityBuilder()
+                            .fileOverride()
+                            .enableLombok()
+                            .enableTableFieldAnnotation()
+                            .enableActiveRecord()
+                            .naming(NamingStrategy.underline_to_camel)
+                            .columnNaming(NamingStrategy.underline_to_camel)
+                            //.superClass(Test.class)
+                            //.addSuperEntityColumns("created_time" ,"updated_time")
+                            //.addTableFills(new Column("create_time", FieldFill.INSERT))
+                            //.addTableFills(new Property("updateTime", FieldFill.INSERT_UPDATE))
+                            .idType(IdType.AUTO)
+                            //.formatFileName("%sEntity")
 
-        StrategyConfig strategyConfig = new StrategyConfig();
-        strategyConfig.setTablePrefix("t_")// 此处可以修改为您的表前缀
-                      .setNaming(NamingStrategy.underline_to_camel)// 表名生成策略
-                      .setInclude(new String[]{"power","role","role_power","user","user_role"}) //需要生成的表
-                      .setEntityLombokModel(true) //Lombok
-                      .setRestControllerStyle(true);
-        autoGenerator.setStrategy(strategyConfig);
+                            .mapperBuilder()
+                            .superClass(BaseMapper.class)
+                            .enableMapperAnnotation()
+                            .enableBaseResultMap()
+                            .enableBaseColumnList()
+                            .formatMapperFileName("%sDao")
+                            .formatXmlFileName("%sXml")
 
-        PackageConfig packageConfig = new PackageConfig();
-        packageConfig.setParent("com.security.securityframework")
-                .setEntity("beans.po")
-                .setMapper("dao")
-                .setService("service")
-                .setController("controller")// 这里是控制器包名，默认 web
-                .setServiceImpl("service.impl")
-                ;
-        autoGenerator.setPackageInfo(packageConfig);
+                            .serviceBuilder()
+                            .superServiceClass(IService.class)
+                            .superServiceImplClass(ServiceImpl.class)
+                            .formatServiceFileName("%sService")
+                            .formatServiceImplFileName("%sServiceImpl")
 
-        TemplateConfig templateConfig = new TemplateConfig();
-        templateConfig.setXml(null); //设置不生成xml
-
-        autoGenerator.setTemplate(templateConfig);
-
-        autoGenerator.execute();
+                            .controllerBuilder()
+                            .enableRestStyle()
+                            .formatFileName("%sController")
+                            .build();
+                    ;
+                });
+        fastAutoGenerator.execute();
     }
 
 }

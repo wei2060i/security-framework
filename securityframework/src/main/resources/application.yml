@@ -3,7 +3,7 @@ spring:
     username: root
     password: 123456
     url: jdbc:mysql://127.0.0.1:3306/oauth?characterEncoding=utf8&serverTimezone=Hongkong&useSSL=false&allowPublicKeyRetrieval=true
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       minimum-idle: 1
@@ -22,7 +22,7 @@ mybatis-plus:
   type-aliases-package: com.security.securityframework.beans.po
   global-config:
     db-config:
-      id-type: assign_id
+      id-type: AUTO
 
 
 logging:
@@ -31,9 +31,11 @@ logging:
 
 
 wei:
-    jwt:
-      iss: wei
-      sub: token
-      aud: wei
-      expireDate: 999999
-      startDate: 0
+  jwt:
+    iss: y=f(x)
+    sub: token
+    aud: f(x)=x^2
+    expireDate: 999999
+    startDate: 0
+  security:
+    enable: true

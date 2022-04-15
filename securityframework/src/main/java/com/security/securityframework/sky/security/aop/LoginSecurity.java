@@ -34,7 +34,7 @@ public class LoginSecurity {
 
     @Around("@within(org.springframework.web.bind.annotation.RestController) && " +
             "!@annotation(com.security.securityframework.sky.security.annotation.SkyPassLogin)")
-    public Object loginAuth(ProceedingJoinPoint pjp) {
+    public Object loginAuth(ProceedingJoinPoint pjp) throws Throwable {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
         HttpServletResponse response = ((ServletRequestAttributes) requestAttributes).getResponse();
@@ -53,9 +53,6 @@ public class LoginSecurity {
         } catch (TokenVerificationException e) {
             e.printStackTrace();
             return skySecurity.doSkySecurityNoLoginProcessed(response);
-        } catch (Throwable e) {
-            e.printStackTrace();
-            return skySecurity.doSkySecuritySystemErrorProcessed(e, response);
         }
         return skySecurity.doSkySecurityNoLoginProcessed(response);
     }

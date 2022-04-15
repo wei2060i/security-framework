@@ -34,7 +34,7 @@ public class User extends Model<User> {
 
 
     @Override
-    protected Serializable pkVal() {
+    public Serializable pkVal() {
         return this.id;
     }
 

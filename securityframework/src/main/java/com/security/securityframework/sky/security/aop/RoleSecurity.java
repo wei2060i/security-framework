@@ -1,9 +1,8 @@
 package com.security.securityframework.sky.security.aop;
 
-import com.security.securityframework.sky.jwt.exception.TokenVerificationException;
-import com.security.securityframework.sky.jwt.service.JwtUtil;
 import com.security.securityframework.sky.security.annotation.SkyRoleSecurity;
 import com.security.securityframework.sky.service.ISkySecurity;
+import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -32,56 +31,52 @@ public class RoleSecurity {
     @Resource
     private ISkySecurity skySecurity;
 
+    @SneakyThrows
     @Around("@annotation(com.security.securityframework.sky.security.annotation.SkyRoleSecurity)")
     public Object roleAuth(ProceedingJoinPoint pjp) {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getResponse();
 
-        try {
-            Long uid = skySecurity.doSkySecurityCheckUserId(request);
-            if (uid != null) {
-                MethodSignature signature = (MethodSignature) pjp.getSignature();
-                SkyRoleSecurity annotation = signature.getMethod().getAnnotation(SkyRoleSecurity.class);
-                //query user roles
-                List<String> userRoleList = skySecurity.doSkySecurityQueryUserRoleList(uid);
+        Long uid = skySecurity.doSkySecurityCheckUserId(request);
+        if (uid != null) {
+            MethodSignature signature = (MethodSignature) pjp.getSignature();
+            SkyRoleSecurity annotation = signature.getMethod().getAnnotation(SkyRoleSecurity.class);
+            //query user roles
+            List<String> userRoleList = skySecurity.doSkySecurityQueryUserRoleList(uid);
 
-                String[] roleListExclude = annotation.roleListExclude();
+            String[] roleListExclude = annotation.roleListExclude();
 
-                if (roleListExclude.length > 0) {
-                    List<String> roleExcludeList = new ArrayList<>(Arrays.asList(roleListExclude));
-                    // 交集
-                    roleExcludeList.retainAll(userRoleList);
-                    if (roleExcludeList.size() != 0) {
-                        return skySecurity.doSkySecurityNoRoleProcessed(response);
-                    }
+            if (roleListExclude.length > 0) {
+                List<String> roleExcludeList = new ArrayList<>(Arrays.asList(roleListExclude));
+                // 交集
+                roleExcludeList.retainAll(userRoleList);
+                if (roleExcludeList.size() != 0) {
+                    return skySecurity.doSkySecurityNoRoleProcessed(response);
                 }
-
-                String[] roleListNeed = annotation.roleListNeed();
-
-                if (roleListNeed.length > 0) {
-                    ArrayList<String> roleNeedList = new ArrayList<>(Arrays.asList(roleListNeed));
-                    int size = roleNeedList.size();
-                    // 交集
-                    roleNeedList.retainAll(userRoleList);
-                    if (roleNeedList.size() != size) {
-                        return skySecurity.doSkySecurityNoRoleProcessed(response);
-                    }
-                }
-
-                String[] roleListOnlyOne = annotation.roleListOnlyOne();
-                if (roleListOnlyOne.length > 0) {
-                    ArrayList<String> roleOnlyOneList = new ArrayList<>(Arrays.asList(roleListOnlyOne));
-                    // 交集
-                    roleOnlyOneList.retainAll(userRoleList);
-                    if (roleOnlyOneList.size() == 0) {
-                        return skySecurity.doSkySecurityNoRoleProcessed(response);
-                    }
-                }
-                pjp.proceed();
             }
-        } catch (Throwable e) {
-            e.printStackTrace();
-            return skySecurity.doSkySecuritySystemErrorProcessed(e, response);
+
+            String[] roleListNeed = annotation.roleListNeed();
+
+            if (roleListNeed.length > 0) {
+                ArrayList<String> roleNeedList = new ArrayList<>(Arrays.asList(roleListNeed));
+                int size = roleNeedList.size();
+                // 交集
+                roleNeedList.retainAll(userRoleList);
+                if (roleNeedList.size() != size) {
+                    return skySecurity.doSkySecurityNoRoleProcessed(response);
+                }
+            }
+
+            String[] roleListOnlyOne = annotation.roleListOnlyOne();
+            if (roleListOnlyOne.length > 0) {
+                ArrayList<String> roleOnlyOneList = new ArrayList<>(Arrays.asList(roleListOnlyOne));
+                // 交集
+                roleOnlyOneList.retainAll(userRoleList);
+                if (roleOnlyOneList.size() == 0) {
+                    return skySecurity.doSkySecurityNoRoleProcessed(response);
+                }
+            }
+            pjp.proceed();
         }
         return skySecurity.doSkySecurityNoLoginProcessed(response);
     }
